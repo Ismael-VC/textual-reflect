@@ -10,7 +10,7 @@
 }
 
 #reflector-input-container {
-    v border: solid $primary;
+    border: solid $primary;
     height: 0.4fr;
     margin: 0 2 1 2;
     background: $background;
