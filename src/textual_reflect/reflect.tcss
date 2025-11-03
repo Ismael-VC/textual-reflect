@@ -21,7 +21,7 @@
 }
 
 #reflector-output-container {
-   v  border: solid $primary;
+    border: solid $primary;
     margin: 1 2 1 2;
     height: 0.6fr;
     background: $background;
