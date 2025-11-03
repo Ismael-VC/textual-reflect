@@ -20,18 +20,12 @@ classifiers = [
 dependencies = [
     "textual >= 6.4.0",
 ]
-urls = [
-    "Homepage" = "https://github.com/Ismael-VC/textual-reflect",
-    "Repository" = "https://github.com/Ismael-VC/textual-reflect.git",
-    "Bug Tracker" = "https://github.com/Ismael-VC/textual-reflect/issues",
-    # "Documentation" = TODO
-]
-
+urls = {"Homepage" = "https://github.com/Ismael-VC/textual-reflect", "Repository" = "https://github.com/Ismael-VC/textual-reflect.git", "Bug Tracker" = "https://github.com/Ismael-VC/textual-reflect/issues"}
+ 
 [project.optional-dependencies]
 syntax = [
-    "textual[syntax] >= 6.40",
+    "textual[syntax] >= 6.4.0",
 ]
-[project.optional-dependencies]
 dev = [
     "ruff",
     "pytest",
