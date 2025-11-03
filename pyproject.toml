@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "textual-reflect"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Textual widget for code reflection and introspection."
 readme = "README.md"
 requires-python = ">=3.9, <4.0"
@@ -20,6 +20,12 @@ classifiers = [
 dependencies = [
     "textual >= 6.4.0",
 ]
+urls = {
+    "Homepage" = "https://github.com/Ismael-VC/textual-reflect",
+    "Repository" = "https://github.com/Ismael-VC/textual-reflect.git",
+    "Bug Tracker" = "https://github.com/Ismael-VC/textual-reflect/issues",
+    # "Documentation" = TODO
+}
 
 [project.optional-dependencies]
 syntax = [
