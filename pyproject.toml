@@ -22,6 +22,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+syntax = [
+    "textual[syntax] >= 6.40",
+]
+[project.optional-dependencies]
 dev = [
     "ruff",
     "pytest",
