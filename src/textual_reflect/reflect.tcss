@@ -1,0 +1,28 @@
+#reflector-input {
+    padding: 1 2 1 2;
+    border: none;
+    background: $surface;
+}
+
+#reflector-output {
+    padding: 1 2 1 2;
+    background: $panel;
+}
+
+#reflector-input-container {
+    v border: solid $primary;
+    height: 0.4fr;
+    margin: 0 2 1 2;
+    background: $background;
+}
+
+#reflector-input-container:focus-within {
+    border: solid $accent;
+}
+
+#reflector-output-container {
+   v  border: solid $primary;
+    margin: 1 2 1 2;
+    height: 0.6fr;
+    background: $background;
+}

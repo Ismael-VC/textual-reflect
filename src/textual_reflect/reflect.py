@@ -13,6 +13,7 @@ from textual.widgets import Footer, Header, RichLog, TextArea
 
 
 class Reflector(Widget):
+    CSS_PATH = "reflect.tcss"
     BINDINGS = [
         ("ctrl+r", "eval", "eval"),
         ("ctrl+n", "dir", "namespace"),
@@ -80,37 +81,6 @@ class Reflector(Widget):
 
 
 class ReflectorApp(App):
-    CSS = """
-    #reflector-input {
-        padding: 1 2 1 2;
-        border: none;
-        background: $surface;
-    }
-    
-    #reflector-output {
-        padding: 1 2 1 2;
-        background: $panel;
-    }
-    
-    #reflector-input-container {
-        border: solid $primary;
-        height: 0.4fr;
-        margin: 0 2 1 2;
-        background: $background;
-    }
-    
-    #reflector-input-container:focus-within {
-        border: solid $accent;
-    }
-    
-    #reflector-output-container {
-        border: solid $primary;
-        margin: 1 2 1 2;
-        height: 0.6fr;
-        background: $background;
-    }
-    """
-
     BINDINGS = [("ctrl+t", "toggle_theme", "toggle theme")]
 
     def compose(self) -> ComposeResult:
