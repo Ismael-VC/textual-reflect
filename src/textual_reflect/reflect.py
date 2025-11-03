@@ -13,7 +13,6 @@ from textual.widgets import Footer, Header, RichLog, TextArea
 
 
 class Reflector(Widget):
-    CSS_PATH = "reflect.tcss"
     BINDINGS = [
         ("ctrl+r", "eval", "eval"),
         ("ctrl+n", "dir", "namespace"),
@@ -81,6 +80,7 @@ class Reflector(Widget):
 
 
 class ReflectorApp(App):
+    CSS_PATH = "reflect.tcss"
     BINDINGS = [("ctrl+t", "toggle_theme", "toggle theme")]
 
     def compose(self) -> ComposeResult:
