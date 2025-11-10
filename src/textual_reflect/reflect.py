@@ -60,6 +60,9 @@ class Reflector(Widget):
         }
 
         #reflector-container {
+            dock: up;
+            width: 75%;
+            height: 45%
             border: solid $primary;
             background: $background;
             margin: 0 1 0 1;
@@ -92,6 +95,7 @@ class Reflector(Widget):
         )
 
         yield self.container
+        yield Container(id="Empty")
 
     def on_mount(self) -> None:
         self.stdout, self.stderr = sys.stdout, sys.stderr
