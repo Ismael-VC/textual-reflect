@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class Reflector(Widget):
     # def __init__(self):
-        # pass
+    # pass
 
     BINDINGS = [
         ("ctrl+r", "eval", "eval"),
@@ -28,7 +28,7 @@ class Reflector(Widget):
         ("ctrl+l", "clear_output", "clear output"),
         ("ctrl+s", "clear_input", "clear input"),
     ]
-    
+
     DEFAULT_CSS = """
         #reflector-input {
             padding: 0 1 0 1;
@@ -66,8 +66,7 @@ class Reflector(Widget):
         }
     """
 
-
-    def compose(self) -> ComposeResult: 
+    def compose(self) -> ComposeResult:
         self.input = TextArea.code_editor(
             id="reflector-input",
             language="python",
@@ -75,33 +74,24 @@ class Reflector(Widget):
             soft_wrap=True,
             placeholder="Press ^r to evaluate.",
         )
-        
-        self.input_container = Container(
-            self.input, 
-            id="reflector-input-container"
-        )
-        
+
+        self.input_container = Container(self.input, id="reflector-input-container")
+
         self.output = RichLog(
-            id="reflector-output", 
-            markup=True, 
+            id="reflector-output",
+            markup=True,
             highlight=True,
             # min_width=80,
             # wrap=True
         )
-        
-        self.output_container = Container(
-            self.output, 
-            id="reflector-output-container"
-        )
-        
+
+        self.output_container = Container(self.output, id="reflector-output-container")
+
         self.container = Container(
-            self.output_container, 
-            self.input_container, 
-            id="reflector-container"
+            self.output_container, self.input_container, id="reflector-container"
         )
 
         yield self.container
-
 
     def on_mount(self) -> None:
         self.stdout, self.stderr = sys.stdout, sys.stderr
@@ -129,7 +119,7 @@ Type "help", "copyright", "credits" or "license" for more information.
     def action_clear_input(self) -> None:
         self.input.clear()
 
-    def write(self, content:str="") -> Self:
+    def write(self, content: str = "") -> Self:
         return self.output.write(Syntax(content, "python", indent_guides=True))
 
     def redirect_io(self):
@@ -137,22 +127,22 @@ Type "help", "copyright", "credits" or "license" for more information.
 
     def restore_io(self):
         sys.stdout, sys.stderr = self.stdout, self.stderr
-    
-    def action_eval(self, code="", capture=False) -> Tuple[str, str]|None:
+
+    def action_eval(self, code="", capture=False) -> Tuple[str, str] | None:
         if not code:
             code = self.input.text
 
         for line in code.split("\n"):
             self.write(f"{self.prompt}{line}")
             self.redirect_io()
-            self.more_input = self.repl.push(line)  
+            self.more_input = self.repl.push(line)
             captured_output = sys.stdout.getvalue().strip()
             captured_error = sys.stderr.getvalue().strip()
             self.restore_io()
 
             if captured_output:
                 self.write(captured_output)
-    
+
             if captured_error:
                 self.write(captured_error)
 
@@ -169,4 +159,4 @@ Type "help", "copyright", "credits" or "license" for more information.
             self.input.focus()
 
             if capture:
-                return captured_output, captured_error     
+                return captured_output, captured_error

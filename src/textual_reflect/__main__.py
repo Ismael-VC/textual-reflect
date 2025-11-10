@@ -1,12 +1,10 @@
 """Entry point for running the Textual ReflectorApp as a module."""
 
-if __name__ == "__main__":
-    from reflect import Reflector
-else:
-    from .reflect import Reflector
+from .reflect import Reflector
 
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header
+
 
 class ReflectorApp(App):
     BINDINGS = [("ctrl+t", "toggle_theme", "toggle theme")]
@@ -31,6 +29,7 @@ class ReflectorApp(App):
         theme = "dracula" if self.theme == "monokai" else "monokai"
         self.theme = theme
         self.reflector.input.theme = theme
+
 
 if __name__ == "__main__":
     app = ReflectorApp()
