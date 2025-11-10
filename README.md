@@ -22,3 +22,14 @@ if __name__ == "__main__":
     app = MyApp()
     app.run()
 ```
+
+TODO
+
+- input accept empty string, write empty line, push \r
+- use sys prompts and return value
+- capture banner
+- 1 big container
+- force vertical
+- vertical group?
+- animation top down
+- log not focusable

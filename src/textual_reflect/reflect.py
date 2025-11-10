@@ -1,43 +1,123 @@
 #!/usr/bin/env python
 
+
+from __future__ import annotations
+
 import sys
-from code import InteractiveConsole
+from code import interact, InteractiveConsole
 from io import StringIO
-from random import choice
+from typing import TYPE_CHECKING
 
 from rich.syntax import Syntax
-from textual.app import App, ComposeResult
+from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
 from textual.widget import Widget
-from textual.widgets import Footer, Header, RichLog, TextArea
+from textual.widgets import RichLog, TextArea
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class Reflector(Widget):
+    # def __init__(self):
+        # pass
+
     BINDINGS = [
         ("ctrl+r", "eval", "eval"),
         ("ctrl+n", "dir", "namespace"),
         ("ctrl+l", "clear_output", "clear output"),
         ("ctrl+s", "clear_input", "clear input"),
     ]
+    
+    DEFAULT_CSS = """
+        #reflector-input {
+            padding: 0 1 0 1;
+            border: none;
+            background: $surface;
+        }
 
-    def compose(self) -> ComposeResult:
+        #reflector-output {
+            padding: 0 1 0 1;
+            background: $surface;
+        }
+
+        #reflector-input-container {
+            border: solid $primary;
+            height: 0.4fr;
+            margin: 0 1 0 1;
+            background: $background;
+        }
+
+        #reflector-input-container:focus-within {
+            border: solid $accent;
+        }
+
+        #reflector-output-container {
+            border: solid $primary;
+            margin: 0 1 0 1;
+            height: 0.6fr;
+            background: $background;
+        }
+
+        #reflector-container {
+            border: solid $primary;
+            background: $background;
+            margin: 0 1 0 1;
+        }
+    """
+
+
+    def compose(self) -> ComposeResult: 
         self.input = TextArea.code_editor(
             id="reflector-input",
             language="python",
-            placeholder="Press ^r to evaluate...",
+            show_line_numbers=False,
+            soft_wrap=True,
+            placeholder="Press ^r to evaluate.",
         )
-        self.input_container = Container(self.input, id="reflector-input-container")
-        self.output = RichLog(id="reflector-output", markup=True, highlight=True)
-        self.output_container = Container(self.output, id="reflector-output-container")
+        
+        self.input_container = Container(
+            self.input, 
+            id="reflector-input-container"
+        )
+        
+        self.output = RichLog(
+            id="reflector-output", 
+            markup=True, 
+            highlight=True,
+            # min_width=80,
+            # wrap=True
+        )
+        
+        self.output_container = Container(
+            self.output, 
+            id="reflector-output-container"
+        )
+        
+        self.container = Container(
+            self.output_container, 
+            self.input_container, 
+            id="reflector-container"
+        )
 
-        yield self.output_container
-        yield self.input_container
+        yield self.container
+
 
     def on_mount(self) -> None:
-        self.input_container.border_title = "Input"
-        self.output_container.border_title = "Output"
+        self.stdout, self.stderr = sys.stdout, sys.stderr
+        self.more_input = False
+        self.prompt = ">>> "
+        self.input_container.border_title = f"{self.prompt}"
+        self.output_container.border_title = f"{self.app.title}"
+        self.input_container.border_subtitle = "Input"
+        self.output_container.border_subtitle = "Output"
         self.namespace = {"app": self.app, "__builtins__": __builtins__}
         self.repl = InteractiveConsole(locals=self.namespace)
+        self.banner = f"""\
+Python {sys.version} on {sys.platform}
+Type "help", "copyright", "credits" or "license" for more information.
+        """
+        self.write(self.banner)
         self.input.focus()
 
     def action_dir(self) -> None:
@@ -49,56 +129,44 @@ class Reflector(Widget):
     def action_clear_input(self) -> None:
         self.input.clear()
 
-    def action_eval(self, code="") -> None:
+    def write(self, content:str="") -> Self:
+        return self.output.write(Syntax(content, "python", indent_guides=True))
+
+    def redirect_io(self):
+        sys.stdout, sys.stderr = StringIO(), StringIO()
+
+    def restore_io(self):
+        sys.stdout, sys.stderr = self.stdout, self.stderr
+    
+    def action_eval(self, code="", capture=False) -> Tuple[str, str]|None:
         if not code:
             code = self.input.text
-            if not code:
-                return
 
-        split_code = code.split("\n")
-        self.output.write(Syntax(f">>> {split_code[0]}", "python", indent_guides=True))
+        for line in code.split("\n"):
+            self.write(f"{self.prompt}{line}")
+            self.redirect_io()
+            self.more_input = self.repl.push(line)  
+            captured_output = sys.stdout.getvalue().strip()
+            captured_error = sys.stderr.getvalue().strip()
+            self.restore_io()
 
-        if len(split_code) > 1:
-            for line in split_code[1:]:
-                self.output.write(Syntax(f"... {line}", "python", indent_guides=True))
-            self.output.write(Syntax("... ", "python", indent_guides=True))
+            if captured_output:
+                self.write(captured_output)
+    
+            if captured_error:
+                self.write(captured_error)
 
-        old_stdout, old_stderr = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = StringIO(), StringIO()
-        self.repl.push(code + "\n")
-        captured_output = sys.stdout.getvalue().strip()
-        captured_error = sys.stderr.getvalue().strip()
+            if self.more_input:
+                self.prompt = "... "
+                # self.input_container.styles.border = ("solid", "yellow")
+            else:
+                self.prompt = ">>> "
+                # self.input_container.styles.border = self.accent
 
-        if captured_output:
-            self.output.write(Syntax(captured_output, "python", indent_guides=True))
-        if captured_error:
-            self.output.write(Syntax(captured_error, "python", indent_guides=True))
+            self.input_container.border_title = f"{self.prompt}"
 
-        sys.stdout, sys.stderr = old_stdout, old_stderr
-        self.input.clear()
-        self.input.focus()
+            self.input.clear()
+            self.input.focus()
 
-
-class ReflectorApp(App):
-    CSS_PATH = "reflect.tcss"
-    BINDINGS = [("ctrl+t", "toggle_theme", "toggle theme")]
-
-    def compose(self) -> ComposeResult:
-        self.header = Header(id="header", icon="🐍")
-        self.reflector = Reflector(id="reflector")
-        self.footer = Footer(id="footer")
-
-        yield self.header
-        yield self.reflector
-        yield self.footer
-
-    def on_mount(self) -> None:
-        self.sub_title = "ReflectorWidget"
-        self.theme = "monokai"
-        self.reflector.input.theme = "monokai"
-
-    def action_toggle_theme(self) -> None:
-        themes = ["dracula", "monokai"]
-        theme = "dracula" if self.theme == "monokai" else "monokai"
-        self.theme = theme
-        self.reflector.input.theme = theme
+            if capture:
+                return captured_output, captured_error     
