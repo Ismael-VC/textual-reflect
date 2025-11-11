@@ -3,32 +3,43 @@
 from .reflect import Reflector
 
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header
+from textual.containers import Container
+from textual.widgets import Footer, Header, Static
 
 
 class ReflectorApp(App):
-    BINDINGS = [("ctrl+t", "toggle_theme", "toggle theme")]
-
+    CSS = """
+        #reflector-container {
+            height: 1fr;
+        }
+        
+        #content {
+            background: teal;
+            height: 1fr;
+        }
+    """
+    
+    BINDINGS = [
+        ("ctrl+t", "toggle", "toggle"),
+    ]
+    
     def compose(self) -> ComposeResult:
         self.header = Header(id="header", icon="🐍")
         self.reflector = Reflector(id="reflector")
         self.footer = Footer(id="footer")
 
         yield self.header
-        yield self.reflector
+        yield Container(self.reflector, Container(), id="content")
         yield self.footer
+
+    def action_toggle(self) -> None: 
+        self.reflector.toggle()
 
     def on_mount(self) -> None:
         self.title = "Reflector"
         self.sub_title = "Demo"
         self.theme = "monokai"
         self.reflector.input.theme = "monokai"
-
-    def action_toggle_theme(self) -> None:
-        themes = ["dracula", "monokai"]
-        theme = "dracula" if self.theme == "monokai" else "monokai"
-        self.theme = theme
-        self.reflector.input.theme = theme
 
 
 if __name__ == "__main__":

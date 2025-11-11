@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 from __future__ import annotations
 
 import sys
@@ -19,9 +18,10 @@ if TYPE_CHECKING:
 
 
 class Reflector(Widget):
-    # def __init__(self):
-    # pass
-
+    def __init__(self, namespace: Dict[str, object]=dict(), *args, **kwargs) -> None:
+        self.namespace = namespace
+        super().__init__(*args, **kwargs)
+        
     BINDINGS = [
         ("ctrl+r", "eval", "eval"),
         ("ctrl+n", "dir", "namespace"),
@@ -60,12 +60,11 @@ class Reflector(Widget):
         }
 
         #reflector-container {
-            dock: up;
-            width: 75%;
-            height: 45%
-            border: solid $primary;
+            width: 100%;
+            height: 100%;
+            border: double $primary;
             background: $background;
-            margin: 0 1 0 1;
+            margin: 0 5 5 5;
         }
     """
 
@@ -78,24 +77,29 @@ class Reflector(Widget):
             placeholder="Press ^r to evaluate.",
         )
 
-        self.input_container = Container(self.input, id="reflector-input-container")
+        self.input_container = Container(
+            self.input, 
+            id="reflector-input-container"
+        )
 
         self.output = RichLog(
             id="reflector-output",
             markup=True,
             highlight=True,
-            # min_width=80,
-            # wrap=True
         )
 
-        self.output_container = Container(self.output, id="reflector-output-container")
+        self.output_container = Container(
+            self.output, 
+            id="reflector-output-container"
+        )
 
         self.container = Container(
-            self.output_container, self.input_container, id="reflector-container"
+            self.output_container, 
+            self.input_container,
+            id="reflector-container"
         )
 
         yield self.container
-        yield Container(id="Empty")
 
     def on_mount(self) -> None:
         self.stdout, self.stderr = sys.stdout, sys.stderr
@@ -105,7 +109,7 @@ class Reflector(Widget):
         self.output_container.border_title = f"{self.app.title}"
         self.input_container.border_subtitle = "Input"
         self.output_container.border_subtitle = "Output"
-        self.namespace = {"app": self.app, "__builtins__": __builtins__}
+        self.namespace.update({"app": self.app, "__builtins__": __builtins__})
         self.repl = InteractiveConsole(locals=self.namespace)
         self.banner = f"""\
 Python {sys.version} on {sys.platform}
@@ -132,6 +136,13 @@ Type "help", "copyright", "credits" or "license" for more information.
     def restore_io(self):
         sys.stdout, sys.stderr = self.stdout, self.stderr
 
+    def toggle(self):
+        self.container.display, _ = (
+            (False, None)
+            if self.container.display
+            else (True, self.input.focus())
+        )
+
     def action_eval(self, code="", capture=False) -> Tuple[str, str] | None:
         if not code:
             code = self.input.text
@@ -152,10 +163,8 @@ Type "help", "copyright", "credits" or "license" for more information.
 
             if self.more_input:
                 self.prompt = "... "
-                # self.input_container.styles.border = ("solid", "yellow")
             else:
                 self.prompt = ">>> "
-                # self.input_container.styles.border = self.accent
 
             self.input_container.border_title = f"{self.prompt}"
 
